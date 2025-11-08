@@ -1,16 +1,15 @@
 const mineflayer = require('mineflayer');
 const express = require('express');
-const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // 🌍 Minecraft Server Config
 const config = {
-  host: 'Anasvirat18.aternos.me', // your Aternos server address
-  port: 35369,                    // your server port
+  host: 'Anasvirat18.aternos.me', // your Aternos IP
+  port: 35369,                    // your port
   version: '1.21.5',              // Java version
-  username: 'AutoBot_3483'        // fixed bot name
+  username: 'AutoBot_3483'        // fixed name
 };
 
 let bot;
@@ -39,22 +38,31 @@ function startBot() {
     botStatus.lastConnected = new Date().toLocaleString();
     console.log(`✅ Bot connected successfully (Minecraft ${bot.version})`);
 
-    startAFKTasks(); // movement & jump
-    setTimeout(checkForBed, 5000); // auto spawn check
+    startAFKTasks(); // random movement
+    setTimeout(checkForBed, 5000); // try to set spawn
+  });
+
+  // 🔁 Auto-respawn when bot dies
+  bot.on('death', () => {
+    console.log('💀 Bot died! Respawning in 5 seconds...');
+    setTimeout(() => {
+      bot.respawn();
+      console.log('🔄 Respawned!');
+    }, 5000);
   });
 
   bot.on('end', () => handleDisconnect('Bot disconnected.'));
   bot.on('kicked', (reason) => handleDisconnect(`Kicked: ${reason}`));
   bot.on('error', (err) => handleDisconnect(`Error: ${err.message}`));
 
-  // Check for bed every Minecraft night
+  // 🕓 Check for bed each Minecraft night
   bot.on('time', () => {
     const t = bot.time.timeOfDay % 24000;
     if (t > 12541 && t < 23460) checkForBed();
   });
 }
 
-// 🔁 Handle disconnects and reconnect
+// 🔁 Handle disconnects & reconnect
 function handleDisconnect(message) {
   console.log(`🔌 ${message}`);
   botStatus.connected = false;
@@ -71,7 +79,7 @@ function scheduleReconnect(delay = 30000) {
   }, delay);
 }
 
-// 🎮 Random AFK movement + jump
+// 🎮 Random movement + jump + break
 function startAFKTasks() {
   setInterval(() => {
     if (!botStatus.connected) return;
@@ -83,13 +91,13 @@ function startAFKTasks() {
     bot.look(Math.random() * Math.PI * 2, 0);
     setTimeout(() => bot.setControlState(move, false), 1000);
 
-    // Jump occasionally
+    // jump sometimes
     if (Math.random() > 0.5) {
       bot.setControlState('jump', true);
       setTimeout(() => bot.setControlState('jump', false), 300);
     }
 
-    // Randomly break block under feet
+    // break block sometimes
     if (Math.random() > 0.7) breakBlockBelow();
   }, 5000);
 }
@@ -106,7 +114,7 @@ async function breakBlockBelow() {
   }
 }
 
-// 🛏️ Auto detect bed and set respawn
+// 🛏️ Check for bed nearby and set respawn
 async function checkForBed() {
   if (!bot.entity || !bot.world) return;
 
@@ -130,7 +138,7 @@ async function checkForBed() {
   }
 }
 
-// 🌐 Simple web dashboard
+// 🌐 Web dashboard (for Render)
 app.get('/', (req, res) => {
   res.send(`
     <h2>🟢 Minecraft Bot Dashboard</h2>

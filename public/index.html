@@ -3,97 +3,38 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Minecraft Bot Dashboard</title>
-  <style>
-    body {
-      background: linear-gradient(135deg, #0d0d0d, #121212);
-      color: #eee;
-      font-family: "Poppins", sans-serif;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
-    }
-    .card {
-      background: #181818;
-      border-radius: 20px;
-      box-shadow: 0 0 25px rgba(0, 255, 255, 0.2);
-      padding: 40px 60px;
-      text-align: center;
-      width: 400px;
-      animation: fadeIn 1s ease;
-    }
-    h1 {
-      color: #00ffff;
-      margin-bottom: 20px;
-      text-shadow: 0 0 10px #00ffff77;
-    }
-    .status {
-      font-size: 1.8em;
-      margin-bottom: 15px;
-    }
-    .online {
-      color: #00ff6a;
-      text-shadow: 0 0 15px #00ff6a;
-    }
-    .offline {
-      color: #ff2d55;
-      text-shadow: 0 0 15px #ff2d55;
-    }
-    .details {
-      font-size: 1.1em;
-      color: #aaa;
-      text-align: left;
-      margin-top: 10px;
-    }
-    footer {
-      font-size: 0.9em;
-      color: #555;
-      margin-top: 20px;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: scale(0.95); }
-      to { opacity: 1; transform: scale(1); }
-    }
-  </style>
+  <title>Minecraft AFK Bot Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-  <div class="card">
-    <h1>🤖 Minecraft Bot Dashboard</h1>
-    <div id="status" class="status">Loading...</div>
-    <div id="details" class="details"></div>
-    <footer>© 2025 AutoBot | Powered by Mineflayer + Render</footer>
+<body class="bg-gray-900 text-white flex flex-col items-center justify-center min-h-screen p-6">
+  <div class="bg-gray-800 rounded-2xl shadow-lg p-8 max-w-md w-full text-center">
+    <h1 class="text-3xl font-bold mb-4">🟢 Minecraft Bot Dashboard</h1>
+    <div id="status" class="text-lg font-mono">Loading...</div>
+    <div class="mt-6 text-gray-400 text-sm">
+      <p>AutoBot_3483 running on Render</p>
+    </div>
   </div>
 
   <script>
-    async function refreshStatus() {
+    async function fetchStatus() {
       try {
-        const res = await fetch('/status')
-        const data = await res.json()
-        const statusEl = document.getElementById('status')
-        const detailsEl = document.getElementById('details')
-
-        if (data.connected) {
-          statusEl.innerHTML = "🟢 <span class='online'>Connected</span>"
-        } else {
-          statusEl.innerHTML = "🔴 <span class='offline'>Disconnected</span>"
-        }
-
-        detailsEl.innerHTML = `
-          <p><b>Server:</b> ${data.host}:${data.port}</p>
-          <p><b>Bot Username:</b> ${data.username}</p>
-          <p><b>Minecraft Version:</b> ${data.version}</p>
-          <p><b>Last Connected:</b> ${data.lastConnected || 'N/A'}</p>
-          ${data.lastError ? `<p><b>Last Error:</b> ${data.lastError}</p>` : ''}
-        `
+        const res = await fetch('/status');
+        const data = await res.json();
+        document.getElementById('status').innerHTML = `
+          <p><b>Status:</b> ${data.connected ? '<span class="text-green-400">Connected ✅</span>' : '<span class="text-red-400">Disconnected ❌</span>'}</p>
+          <p><b>Server:</b> ${data.server}</p>
+          <p><b>Version:</b> ${data.version}</p>
+          <p><b>Bot Name:</b> ${data.username}</p>
+          <p><b>Last Connected:</b> ${data.lastConnected || 'Never'}</p>
+          <p><b>Last Error:</b> ${data.lastError || 'None'}</p>
+        `;
       } catch (err) {
-        document.getElementById('status').innerHTML = "⚠️ Error fetching status"
+        document.getElementById('status').innerHTML = `<p class="text-red-400">⚠️ Failed to fetch status</p>`;
       }
     }
 
-    refreshStatus()
-    setInterval(refreshStatus, 5000)
+    fetchStatus();
+    setInterval(fetchStatus, 5000); // auto refresh every 5 seconds
   </script>
 </body>
 </html>

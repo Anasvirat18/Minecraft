@@ -1,14 +1,13 @@
 {
-  "name": "minecraft-bot",
+  "name": "minecraft-bot-dashboard",
   "version": "1.0.0",
-  "description": "A universal Minecraft bot that moves, jumps, breaks, and places blocks using Mineflayer.",
+  "description": "A professional Minecraft bot with live Render dashboard",
   "main": "bot.js",
   "scripts": {
     "start": "node bot.js"
   },
-  "author": "Anas",
-  "license": "MIT",
   "dependencies": {
+    "express": "^4.21.1",
     "mineflayer": "^4.21.0"
   }
 }

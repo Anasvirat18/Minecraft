@@ -5,9 +5,9 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// 🌍 Minecraft Config (change host/port to your Aternos server)
+// 🌍 Minecraft Bot Configuration
 const config = {
-  host: 'Anasvirat18.aternos.me',
+  host: 'Anasvirat18.aternos.me', // your Aternos server host
   port: 35369,
   version: '1.21.5'
 };
@@ -20,18 +20,18 @@ let botStatus = {
   lastError: null
 };
 
-// ✨ Helper to create a unique username each session
+// ✨ Helper: random unique username
 function randomUsername() {
   const id = Math.floor(Math.random() * 10000);
   return `AutoBot_${id}`;
 }
 
-// 🧠 Start bot
+// 🧠 Start Bot (after service is live)
 function startBot() {
   if (reconnectTimeout) clearTimeout(reconnectTimeout);
 
   const username = randomUsername();
-  console.log(`🚀 Starting Minecraft bot as ${username}...`);
+  console.log(`🤖 Launching Minecraft bot as ${username}...`);
 
   bot = mineflayer.createBot({
     host: config.host,
@@ -43,11 +43,11 @@ function startBot() {
   bot.once('spawn', () => {
     botStatus.connected = true;
     botStatus.lastConnected = new Date().toLocaleString();
-    console.log(`✅ Bot connected successfully (Minecraft ${bot.version})`);
+    console.log(`✅ Bot connected successfully (${bot.version})`);
   });
 
-  // 🔁 Controlled reconnects
-  function scheduleReconnect(delay = 90000) { // 90 s
+  // Controlled reconnects
+  function scheduleReconnect(delay = 90000) {
     if (reconnectTimeout) return;
     console.log(`🔁 Reconnecting in ${delay / 1000}s...`);
     reconnectTimeout = setTimeout(() => {
@@ -65,21 +65,18 @@ function startBot() {
   bot.on('kicked', (reason) => {
     console.log('🚪 Kicked:', reason);
     botStatus.connected = false;
-    scheduleReconnect(90000); // wait 90 s to avoid throttle
+    scheduleReconnect(90000);
   });
 
   bot.on('error', (err) => {
     console.log('⚠️ Error:', err.message);
     botStatus.connected = false;
     botStatus.lastError = err.message;
-    scheduleReconnect(120000); // 2 min delay for connection errors
+    scheduleReconnect(120000);
   });
 }
 
-// 🚀 Launch
-startBot();
-
-// 🌐 Web dashboard
+// 🌐 Express dashboard
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/status', (req, res) => {
@@ -93,6 +90,14 @@ app.get('/status', (req, res) => {
   });
 });
 
+// 🟢 Step 1: Start web service first (so Render marks it as “live”)
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🌍 Web dashboard running on port ${PORT}`);
+  console.log(`🌍 Web dashboard is live on port ${PORT}`);
+
+  // 🟢 Step 2: Wait a few seconds to ensure service is stable, then join Minecraft
+  console.log('⏳ Waiting for Render service to stabilize...');
+  setTimeout(() => {
+    console.log('🚀 Service is live — connecting Minecraft bot...');
+    startBot();
+  }, 15000); // wait 15 seconds before joining
 });
